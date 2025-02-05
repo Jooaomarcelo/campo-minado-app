@@ -6,7 +6,7 @@ import 'package:campo_minado_app/core/models/auth_form_data.dart';
 import 'package:campo_minado_app/components/user_image_picker.dart';
 
 class AuthForm extends StatefulWidget {
-  final void Function(AuthFormData) onSubmit;
+  final Future<void> Function(AuthFormData) onSubmit;
 
   const AuthForm({
     required this.onSubmit,
@@ -21,6 +21,10 @@ class _AuthFormState extends State<AuthForm> {
   final _formData = AuthFormData();
 
   final _formKey = GlobalKey<FormState>();
+
+  // Controllers
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   // FocusNodes
   final _emailFocusNode = FocusNode();
@@ -42,7 +46,7 @@ class _AuthFormState extends State<AuthForm> {
     _formData.image = image;
   }
 
-  void _submit() {
+  void _submit() async {
     final isValid = _formKey.currentState?.validate() ?? false;
 
     if (!isValid) return;
@@ -51,10 +55,17 @@ class _AuthFormState extends State<AuthForm> {
       _showErrorDialog('Imagem não selecionada.');
     }
 
-    widget.onSubmit(_formData);
+    await widget.onSubmit(_formData);
 
     if (_formData.isSignup) {
+      // Resetando o formulário
       _formKey.currentState?.reset();
+
+      // Limpando os controladores de email e senha
+      _emailController.clear();
+      _passwordController.clear();
+
+      _formData.name = '';
       _formData.image = null;
 
       setState(() => _formData.toggleMode());
@@ -116,7 +127,7 @@ class _AuthFormState extends State<AuthForm> {
               TextFormField(
                 key: ValueKey('email'),
                 focusNode: _emailFocusNode,
-                initialValue: _formData.email,
+                controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'E-mail',
                   prefixIcon: Icon(
@@ -147,7 +158,7 @@ class _AuthFormState extends State<AuthForm> {
               TextFormField(
                 key: ValueKey('password'),
                 focusNode: _passwordFocusNode,
-                initialValue: _formData.password,
+                controller: _passwordController,
                 obscureText: _isPasswordObscure,
                 decoration: InputDecoration(
                   labelText: 'Senha',
@@ -178,7 +189,10 @@ class _AuthFormState extends State<AuthForm> {
 
                   return null;
                 },
-                onFieldSubmitted: (_) => _submit(),
+                onFieldSubmitted: (_) {
+                  FocusScope.of(context).unfocus();
+                  _submit();
+                },
               ),
               const SizedBox(height: 20),
               GestureDetector(
