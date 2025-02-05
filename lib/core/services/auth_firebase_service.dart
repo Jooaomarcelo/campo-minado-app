@@ -15,6 +15,7 @@ class AuthFirebaseService with ChangeNotifier implements AuthService {
   @override
   UserData? get currentUser => _currentUser;
 
+  @override
   Stream<UserData?> get userChanges =>
       FirebaseAuth.instance.authStateChanges().map(
         (user) {

@@ -42,7 +42,7 @@ class _AuthPageState extends State<AuthPage> {
     } catch (error) {
       _showErrorDialog('Email ou senha inválida.');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
