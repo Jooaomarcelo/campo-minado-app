@@ -1,8 +1,17 @@
-import 'package:campo_minado_app/core/models/auth_form_data.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
+import 'package:campo_minado_app/core/models/auth_form_data.dart';
+import 'package:campo_minado_app/components/user_image_picker.dart';
+
 class AuthForm extends StatefulWidget {
-  const AuthForm({super.key});
+  final void Function(AuthFormData) onSubmit;
+
+  const AuthForm({
+    required this.onSubmit,
+    super.key,
+  });
 
   @override
   State<AuthForm> createState() => _AuthFormState();
@@ -10,6 +19,47 @@ class AuthForm extends StatefulWidget {
 
 class _AuthFormState extends State<AuthForm> {
   final _formData = AuthFormData();
+
+  final _formKey = GlobalKey<FormState>();
+
+  // FocusNodes
+  final _emailFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
+
+  // Show password
+  bool _isPasswordObscure = true;
+
+  void _showErrorDialog(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
+  }
+
+  void _handleImagePick(File image) {
+    _formData.image = image;
+  }
+
+  void _submit() {
+    final isValid = _formKey.currentState?.validate() ?? false;
+
+    if (!isValid) return;
+
+    if (_formData.image == null && _formData.isSignup) {
+      _showErrorDialog('Imagem não selecionada.');
+    }
+
+    widget.onSubmit(_formData);
+
+    if (_formData.isSignup) {
+      _formKey.currentState?.reset();
+      _formData.image = null;
+
+      setState(() => _formData.toggleMode());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,86 +71,157 @@ class _AuthFormState extends State<AuthForm> {
       ),
       child: Padding(
         padding: const EdgeInsets.all(15),
-        child: Column(
-          children: [
-            Text(
-              _formData.isLogin ? 'Entrar' : 'Cadastrar',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            if (_formData.isSignup)
-              TextField(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Text(
+                _formData.isLogin ? 'Entrar' : 'Cadastrar',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              if (_formData.isSignup)
+                Container(
+                  margin: const EdgeInsets.all(15),
+                  child: UserImagePicker(
+                    onImagePick: _handleImagePick,
+                  ),
+                ),
+              if (_formData.isSignup)
+                TextFormField(
+                  key: ValueKey('name'),
+                  initialValue: _formData.name,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome',
+                    prefixIcon: Icon(
+                      Icons.person,
+                      size: 20,
+                      color: Color(0xffffeba7),
+                    ),
+                  ),
+                  textInputAction: TextInputAction.next,
+                  onChanged: (value) => _formData.name = value,
+                  validator: (textField) {
+                    final name = textField ?? '';
+
+                    if (name.trim().isEmpty) {
+                      return 'Nome de Usuário não pode ser vazio.';
+                    }
+
+                    return null;
+                  },
+                  onFieldSubmitted: (_) {
+                    FocusScope.of(context).requestFocus(_emailFocusNode);
+                  },
+                ),
+              TextFormField(
+                key: ValueKey('email'),
+                focusNode: _emailFocusNode,
+                initialValue: _formData.email,
                 decoration: const InputDecoration(
-                  labelText: 'Nome',
+                  labelText: 'E-mail',
                   prefixIcon: Icon(
-                    Icons.person,
+                    Icons.alternate_email,
                     size: 20,
                     color: Color(0xffffeba7),
                   ),
                 ),
-                onChanged: (value) => _formData.name = value,
+                textInputAction: TextInputAction.next,
+                onChanged: (value) => _formData.email = value,
+                validator: (textField) {
+                  final email = textField ?? '';
+
+                  if (email.trim().isEmpty) {
+                    return 'Nome de Usuário não pode ser vazio.';
+                  }
+
+                  if (!email.contains('@')) {
+                    return 'Email inválido.';
+                  }
+
+                  return null;
+                },
+                onFieldSubmitted: (_) {
+                  FocusScope.of(context).requestFocus(_passwordFocusNode);
+                },
               ),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'E-mail',
-                prefixIcon: Icon(
-                  Icons.alternate_email,
-                  size: 20,
-                  color: Color(0xffffeba7),
-                ),
-              ),
-              onChanged: (value) => _formData.email = value,
-            ),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Senha',
-                prefixIcon: Icon(
-                  Icons.lock,
-                  size: 20,
-                  color: Color(0xffffeba7),
-                ),
-              ),
-              onChanged: (value) => _formData.password = value,
-            ),
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Color(0xffffeba7), // Cor de fundo
-                  borderRadius: BorderRadius.circular(4), // Bordas arredondadas
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color.fromRGBO(255, 235, 167, 0.2),
-                      blurRadius: 8,
+              TextFormField(
+                key: ValueKey('password'),
+                focusNode: _passwordFocusNode,
+                initialValue: _formData.password,
+                obscureText: _isPasswordObscure,
+                decoration: InputDecoration(
+                  labelText: 'Senha',
+                  prefixIcon: Icon(
+                    Icons.lock,
+                    size: 20,
+                    color: Color(0xffffeba7),
+                  ),
+                  suffixIcon: IconButton(
+                    onPressed: () => setState(
+                        () => _isPasswordObscure = !_isPasswordObscure),
+                    icon: Icon(
+                      _isPasswordObscure
+                          ? Icons.remove_red_eye_outlined
+                          : Icons.remove_red_eye,
+                      color: Color(0xffffeba7),
                     ),
-                  ],
+                  ),
                 ),
-                child: Text(
-                  _formData.isLogin ? 'ENTRAR' : 'CADASTRAR',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromRGBO(78, 85, 107, 1),
+                onChanged: (value) => _formData.password = value,
+                textInputAction: TextInputAction.done,
+                validator: (textField) {
+                  final password = textField ?? '';
+
+                  if (password.trim().length < 6) {
+                    return 'A senha deve conter no mínimo 6 caractéres.';
+                  }
+
+                  return null;
+                },
+                onFieldSubmitted: (_) => _submit(),
+              ),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: _submit,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Color(0xffffeba7), // Cor de fundo
+                    borderRadius:
+                        BorderRadius.circular(4), // Bordas arredondadas
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromRGBO(255, 235, 167, 0.2),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    _formData.isLogin ? 'ENTRAR' : 'CADASTRAR',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromRGBO(78, 85, 107, 1),
+                    ),
                   ),
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () => setState(() => _formData.toggleMode()),
-              child: Text(
-                _formData.isLogin ? 'Novo usuário?' : 'Já possui uma conta?',
-                style: TextStyle(
-                  color: Colors.white,
-                  decoration: TextDecoration.underline,
-                  height: 1.5,
+              TextButton(
+                onPressed: () => setState(() => _formData.toggleMode()),
+                child: Text(
+                  _formData.isLogin ? 'Novo usuário?' : 'Já possui uma conta?',
+                  style: TextStyle(
+                    color: Colors.white,
+                    decoration: TextDecoration.underline,
+                    height: 1.5,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

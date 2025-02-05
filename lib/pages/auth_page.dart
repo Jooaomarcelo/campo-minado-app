@@ -1,4 +1,6 @@
 import 'package:campo_minado_app/components/auth_form.dart';
+import 'package:campo_minado_app/core/models/auth_form_data.dart';
+import 'package:campo_minado_app/core/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class AuthPage extends StatefulWidget {
@@ -11,6 +13,39 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   bool _isLoading = false;
 
+  void _showErrorDialog(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
+  }
+
+  Future<void> _handleSubmit(AuthFormData formData) async {
+    try {
+      setState(() => _isLoading = true);
+
+      if (formData.isLogin) {
+        await AuthService().login(
+          formData.email,
+          formData.password,
+        );
+      } else {
+        await AuthService().signup(
+          formData.name,
+          formData.email,
+          formData.password,
+          formData.image,
+        );
+      }
+    } catch (error) {
+      _showErrorDialog('Email ou senha inválida.');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +53,9 @@ class _AuthPageState extends State<AuthPage> {
         children: [
           Center(
             child: SingleChildScrollView(
-              child: AuthForm(),
+              child: AuthForm(
+                onSubmit: _handleSubmit,
+              ),
             ),
           ),
           if (_isLoading)
