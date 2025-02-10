@@ -1,6 +1,10 @@
 import 'dart:io';
 
+import 'package:campo_minado_app/components/board_widget.dart';
 import 'package:campo_minado_app/components/result_widget.dart';
+import 'package:campo_minado_app/core/models/board.dart';
+import 'package:campo_minado_app/core/models/explosion_exception.dart';
+import 'package:campo_minado_app/core/models/field.dart';
 import 'package:campo_minado_app/core/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
@@ -14,6 +18,36 @@ class MinefieldPage extends StatefulWidget {
 class _MinefieldPageState extends State<MinefieldPage> {
   static const _defaultImage = 'assets/images/avatar.png';
   final _currentUser = AuthService().currentUser;
+
+  bool? _won;
+  final Board _board = Board(rows: 12, columns: 12, minesCount: 3);
+
+  void _open(Field field) {
+    if (_won != null) return _restart();
+    setState(() {
+      try {
+        field.open();
+
+        if (_board.finished) {
+          _won = true;
+        }
+      } on ExplosionException {
+        _won = false;
+        _board.revealMines();
+      }
+    });
+  }
+
+  void _toggleMark(Field field) {
+    if (_won != null) return;
+    setState(() {
+      field.toggleMark();
+
+      if (_board.finished) {
+        _won = true;
+      }
+    });
+  }
 
   void _restart() {
     showDialog<bool>(
@@ -33,8 +67,11 @@ class _MinefieldPageState extends State<MinefieldPage> {
         ],
       ),
     ).then((isConfirmed) => isConfirmed == true
-        ? debugPrint('Restart')
-        : debugPrint('Don\'t Restart'));
+        ? setState(() {
+            _won = null;
+            _board.restart();
+          })
+        : null);
   }
 
   Widget _showUserImage(String imageUrl) {
@@ -59,7 +96,7 @@ class _MinefieldPageState extends State<MinefieldPage> {
     return Scaffold(
       appBar: AppBar(
         title: ResultWidget(
-          won: null,
+          won: _won,
           onRestart: _restart,
         ),
         centerTitle: true,
@@ -82,8 +119,10 @@ class _MinefieldPageState extends State<MinefieldPage> {
           ),
         ],
       ),
-      body: Center(
-        child: Text('Campo Minado'),
+      body: BoardWidget(
+        board: _board,
+        onOpen: _open,
+        onToggleMark: _toggleMark,
       ),
     );
   }
