@@ -20,7 +20,23 @@ class _MinefieldPageState extends State<MinefieldPage> {
   final _currentUser = AuthService().currentUser;
 
   bool? _won;
-  final Board _board = Board(rows: 12, columns: 12, minesCount: 3);
+  Board? _board;
+
+  Board _getBoard(double width, double height) {
+    if (_board == null) {
+      final int columns = 15;
+      final double fieldSize = width / columns;
+      final int rows = (height / fieldSize).floor();
+
+      _board = Board(
+        rows: rows,
+        columns: columns,
+        minesCount: 10,
+      );
+    }
+
+    return _board!;
+  }
 
   void _open(Field field) {
     if (_won != null) return _restart();
@@ -28,12 +44,12 @@ class _MinefieldPageState extends State<MinefieldPage> {
       try {
         field.open();
 
-        if (_board.finished) {
+        if (_board!.finished) {
           _won = true;
         }
       } on ExplosionException {
         _won = false;
-        _board.revealMines();
+        _board!.revealMines();
       }
     });
   }
@@ -43,7 +59,7 @@ class _MinefieldPageState extends State<MinefieldPage> {
     setState(() {
       field.toggleMark();
 
-      if (_board.finished) {
+      if (_board!.finished) {
         _won = true;
       }
     });
@@ -69,7 +85,7 @@ class _MinefieldPageState extends State<MinefieldPage> {
     ).then((isConfirmed) => isConfirmed == true
         ? setState(() {
             _won = null;
-            _board.restart();
+            _board!.restart();
           })
         : null);
   }
@@ -119,10 +135,20 @@ class _MinefieldPageState extends State<MinefieldPage> {
           ),
         ],
       ),
-      body: BoardWidget(
-        board: _board,
-        onOpen: _open,
-        onToggleMark: _toggleMark,
+      body: Container(
+        color: Colors.black,
+        child: LayoutBuilder(
+          builder: (ctx, constraints) {
+            return BoardWidget(
+              board: _getBoard(
+                constraints.maxWidth,
+                constraints.maxHeight,
+              ),
+              onOpen: _open,
+              onToggleMark: _toggleMark,
+            );
+          },
+        ),
       ),
     );
   }
