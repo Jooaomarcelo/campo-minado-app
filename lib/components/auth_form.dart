@@ -196,7 +196,11 @@ class _AuthFormState extends State<AuthForm> {
               ),
               const SizedBox(height: 20),
               GestureDetector(
-                onTap: _submit,
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+
+                  _submit();
+                },
                 child: Container(
                   padding: EdgeInsets.symmetric(
                     vertical: 8,
