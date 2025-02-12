@@ -1,3 +1,4 @@
+import 'package:campo_minado_app/pages/user_page.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -41,7 +42,10 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         debugShowCheckedModeBanner: false,
-        home: const AuthOrApp(),
+        routes: {
+          '/': (ctx) => const AuthOrApp(),
+          '/user': (ctx) => const UserPage(),
+        },
       ),
     );
   }
