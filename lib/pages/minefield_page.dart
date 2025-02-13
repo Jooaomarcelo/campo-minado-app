@@ -123,12 +123,23 @@ class _MinefieldPageState extends State<MinefieldPage> {
               offset: Offset(0, 45),
               itemBuilder: (ctx) => [
                 PopupMenuItem(
+                  value: 'user',
+                  child: Text('Meu perfil'),
+                ),
+                PopupMenuItem(
                   value: 'logout',
                   child: Text('Sair'),
-                )
+                ),
               ],
               onSelected: (value) {
-                if (value == 'logout') AuthService().logout();
+                if (value == 'logout') {
+                  AuthService().logout();
+                } else {
+                  Navigator.of(context).pushNamed(
+                    '/user',
+                    arguments: _currentUser,
+                  );
+                }
               },
               child: _showUserImage(_currentUser?.imageUrl ?? _defaultImage),
             ),
