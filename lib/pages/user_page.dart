@@ -1,5 +1,13 @@
-import 'package:campo_minado_app/core/models/user_data.dart';
 import 'package:flutter/material.dart';
+
+import 'package:campo_minado_app/components/user_recent_match.dart';
+import 'package:campo_minado_app/components/user_sliver_header.dart';
+import 'package:campo_minado_app/components/user_status_bar.dart';
+import 'package:campo_minado_app/components/user_performance_overview.dart';
+
+import 'package:campo_minado_app/core/models/match_data.dart';
+import 'package:campo_minado_app/core/models/user_data.dart';
+import 'package:campo_minado_app/core/services/match/match_service.dart';
 
 class UserPage extends StatelessWidget {
   const UserPage({super.key});
@@ -13,7 +21,7 @@ class UserPage extends StatelessWidget {
         slivers: [
           SliverPersistentHeader(
             pinned: true,
-            delegate: SliverPersistantDelegate(user),
+            delegate: UserSliverHeader(user),
           ),
           SliverToBoxAdapter(
             child: Column(
@@ -26,100 +34,36 @@ class UserPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20),
-                SizedBox(height: 2000),
+                StreamBuilder(
+                  stream: MatchService().matchesStream(),
+                  builder: (ctx, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Text('Nenhuma partida jogada!');
+                    } else {
+                      final matches = snapshot.data as List<MatchData>;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        child: Column(
+                          children: [
+                            UserStatusBar(matches),
+                            SizedBox(height: 20),
+                            UserRecentMatch(matches.take(5).toList()),
+                            SizedBox(height: 20),
+                            UserPerformanceOverview(matches),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                ),
               ],
             ),
           ),
         ],
       ),
     );
-  }
-}
-
-class SliverPersistantDelegate extends SliverPersistentHeaderDelegate {
-  final UserData user;
-
-  double maxHeaderHeight = 200;
-  double minHeaderHeight = kToolbarHeight + 55;
-
-  double maxImageSize = 136;
-  double minImageSize = 40;
-
-  SliverPersistantDelegate(this.user);
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final mediaSize = MediaQuery.of(context).size;
-
-    final percent = shrinkOffset / (maxHeaderHeight - 65);
-    final percent2 = shrinkOffset / maxHeaderHeight;
-
-    final currentImageSize = (maxImageSize * (1 - percent)).clamp(
-      minImageSize,
-      maxImageSize,
-    );
-    final currentImagePosition = ((mediaSize.width / 2 - 65) * (1 - percent))
-        .clamp(minImageSize, maxImageSize);
-
-    return Container(
-      color: Color.fromRGBO(18, 18, 18, 1),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.white
-                  .withValues(alpha: percent2 * 2 < 1 ? percent2 * 2 : 1),
-              width: 0.5,
-            ),
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: MediaQuery.of(context).viewPadding.top + 15,
-              left: currentImagePosition + 50,
-              child: Text(
-                user.name,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: percent2),
-                  fontSize: 20,
-                ),
-              ),
-            ),
-            Positioned(
-              top: MediaQuery.of(context).viewPadding.top + 5,
-              left: 0,
-              child: BackButton(),
-            ),
-            Positioned(
-              top: MediaQuery.of(context).viewPadding.top + 5,
-              left: currentImagePosition,
-              bottom: 0,
-              child: Container(
-                width: currentImageSize,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: NetworkImage(user.imageUrl),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  double get maxExtent => maxHeaderHeight;
-
-  @override
-  double get minExtent => minHeaderHeight;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
   }
 }
