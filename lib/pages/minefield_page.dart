@@ -194,18 +194,24 @@ class _MinefieldPageState extends State<MinefieldPage> {
                   child: Text('Meu perfil'),
                 ),
                 PopupMenuItem(
+                  value: 'tutorial',
+                  child: Text('Ver Tutorial'),
+                ),
+                PopupMenuItem(
                   value: 'logout',
                   child: Text('Sair'),
                 ),
               ],
               onSelected: (value) {
-                if (value == 'logout') {
-                  AuthService().logout();
-                } else {
+                if (value == 'user') {
                   Navigator.of(context).pushNamed(
                     '/user',
                     arguments: _currentUser,
                   );
+                } else if (value == 'tutorial') {
+                  _minefieldTutorial.showTutorial(context);
+                } else {
+                  AuthService().logout();
                 }
               },
               child: _showUserImage(_currentUser?.imageUrl ?? _defaultImage),

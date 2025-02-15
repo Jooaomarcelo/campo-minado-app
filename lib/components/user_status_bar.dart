@@ -30,6 +30,19 @@ class UserStatusBar extends StatelessWidget {
     );
   }
 
+  int _getWinningStreak(List<MatchData> matches) {
+    int streak = 0;
+
+    for (final match in matches) {
+      if (match.won) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -44,8 +57,8 @@ class UserStatusBar extends StatelessWidget {
             _getItem(Icons.check, Colors.green,
                 '${matches.where((m) => m.won).length}'),
             _getSeparator(),
-            _getItem(Icons.whatshot, Colors.red,
-                '${matches.where((m) => !m.won).length}'),
+            _getItem(
+                Icons.whatshot, Colors.red, '${_getWinningStreak(matches)}'),
             _getSeparator(),
             _getItem(Icons.flag, Colors.blue, '${matches.length}'),
           ],

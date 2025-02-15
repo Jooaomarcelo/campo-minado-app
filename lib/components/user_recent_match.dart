@@ -19,7 +19,7 @@ class UserRecentMatch extends StatelessWidget {
             leading: CircleAvatar(
               backgroundColor: Colors.white,
               child: Icon(
-                match.won ? Icons.check : Icons.whatshot,
+                match.won ? Icons.check : Icons.clear,
                 color: match.won ? Colors.green : Colors.red,
               ),
             ),

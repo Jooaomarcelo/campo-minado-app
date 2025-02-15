@@ -122,4 +122,17 @@ class MinefieldTutorial {
       await prefs.setBool('isFirstTime', false);
     }
   }
+
+  void showTutorial(BuildContext context) {
+    _tutorialCoachMark = TutorialCoachMark(
+      targets: _targets,
+      colorShadow: Colors.black54,
+      skipWidget: FloatingActionButton(
+        onPressed: () {
+          _tutorialCoachMark.finish();
+        },
+        child: const Text('Pular Tutorial', textAlign: TextAlign.center),
+      ),
+    )..show(context: context);
+  }
 }
