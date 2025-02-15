@@ -48,7 +48,7 @@ class _MinefieldPageState extends State<MinefieldPage> {
 
     // Mostrar o tutorial após a renderização final da tela
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _minefieldTutorial.showTutorial(context);
+      _minefieldTutorial.showTutorialIfFirstTime(context);
     });
   }
 

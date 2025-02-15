@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MinefieldTutorial {
   late TutorialCoachMark _tutorialCoachMark;
@@ -100,16 +101,25 @@ class MinefieldTutorial {
     );
   }
 
-  void showTutorial(BuildContext context) {
-    _tutorialCoachMark = TutorialCoachMark(
-      targets: _targets,
-      colorShadow: Colors.black54,
-      skipWidget: FloatingActionButton(
-        onPressed: () {
-          _tutorialCoachMark.finish();
-        },
-        child: const Text('Pular Tutorial', textAlign: TextAlign.center),
-      ),
-    )..show(context: context);
+  Future<void> showTutorialIfFirstTime(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
+    if (isFirstTime) {
+      if (!context.mounted) return;
+
+      _tutorialCoachMark = TutorialCoachMark(
+        targets: _targets,
+        colorShadow: Colors.black54,
+        skipWidget: FloatingActionButton(
+          onPressed: () {
+            _tutorialCoachMark.finish();
+          },
+          child: const Text('Pular Tutorial', textAlign: TextAlign.center),
+        ),
+      )..show(context: context);
+
+      await prefs.setBool('isFirstTime', false);
+    }
   }
 }
