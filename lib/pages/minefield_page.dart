@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:campo_minado_app/components/minefield_tutorial.dart';
+import 'package:flutter/material.dart';
+
 import 'package:campo_minado_app/components/board_widget.dart';
 import 'package:campo_minado_app/components/result_widget.dart';
 import 'package:campo_minado_app/core/models/board.dart';
@@ -7,7 +10,6 @@ import 'package:campo_minado_app/core/models/explosion_exception.dart';
 import 'package:campo_minado_app/core/models/field.dart';
 import 'package:campo_minado_app/core/services/auth/auth_service.dart';
 import 'package:campo_minado_app/core/services/match/match_service.dart';
-import 'package:flutter/material.dart';
 
 class MinefieldPage extends StatefulWidget {
   const MinefieldPage({super.key});
@@ -25,6 +27,30 @@ class _MinefieldPageState extends State<MinefieldPage> {
 
   DateTime? _start;
   int? _durationInSeconds;
+
+  // Criando chaves globais para os campos do meio, do botão de reiniciar e do perfil
+  // Essas chaves serão utilizadas para exibir o tutorial
+  final GlobalKey _fieldKey = GlobalKey();
+  final GlobalKey _restartKey = GlobalKey();
+  final GlobalKey _profileKey = GlobalKey();
+
+  late MinefieldTutorial _minefieldTutorial;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _minefieldTutorial = MinefieldTutorial(
+      fieldKey: _fieldKey,
+      restartKey: _restartKey,
+      profileKey: _profileKey,
+    );
+
+    // Mostrar o tutorial após a renderização final da tela
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _minefieldTutorial.showTutorial(context);
+    });
+  }
 
   Board _getBoard(double width, double height) {
     if (_board == null) {
@@ -151,12 +177,14 @@ class _MinefieldPageState extends State<MinefieldPage> {
     return Scaffold(
       appBar: AppBar(
         title: ResultWidget(
+          key: _restartKey,
           won: _won,
           onRestart: _restart,
         ),
         centerTitle: true,
         actions: [
           Container(
+            key: _profileKey,
             margin: EdgeInsets.only(right: 10),
             child: PopupMenuButton(
               offset: Offset(0, 45),
@@ -196,6 +224,7 @@ class _MinefieldPageState extends State<MinefieldPage> {
               ),
               onOpen: _open,
               onToggleMark: _toggleMark,
+              tutorialFieldKey: _fieldKey,
             );
           },
         ),
