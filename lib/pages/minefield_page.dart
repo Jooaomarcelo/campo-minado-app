@@ -6,6 +6,7 @@ import 'package:campo_minado_app/core/models/board.dart';
 import 'package:campo_minado_app/core/models/explosion_exception.dart';
 import 'package:campo_minado_app/core/models/field.dart';
 import 'package:campo_minado_app/core/services/auth_service.dart';
+import 'package:campo_minado_app/core/services/match/match_service.dart';
 import 'package:flutter/material.dart';
 
 class MinefieldPage extends StatefulWidget {
@@ -21,6 +22,9 @@ class _MinefieldPageState extends State<MinefieldPage> {
 
   bool? _won;
   Board? _board;
+
+  DateTime? _start;
+  int? _durationInSeconds;
 
   Board _getBoard(double width, double height) {
     if (_board == null) {
@@ -40,15 +44,41 @@ class _MinefieldPageState extends State<MinefieldPage> {
 
   void _open(Field field) {
     if (_won != null) return _restart();
+
+    if (_board!.gameStarted == false) {
+      _board!.start();
+
+      _start = DateTime.now();
+    }
+
     setState(() {
       try {
         field.open();
 
         if (_board!.finished) {
           _won = true;
+
+          final end = DateTime.now();
+          _durationInSeconds = end.difference(_start!).inSeconds;
+
+          MatchService().addMatch(
+            _currentUser!,
+            _won!,
+            _durationInSeconds!,
+          );
         }
       } on ExplosionException {
         _won = false;
+
+        final end = DateTime.now();
+        _durationInSeconds = end.difference(_start!).inSeconds;
+
+        MatchService().addMatch(
+          _currentUser!,
+          _won!,
+          _durationInSeconds!,
+        );
+
         _board!.revealMines();
       }
     });
@@ -61,6 +91,15 @@ class _MinefieldPageState extends State<MinefieldPage> {
 
       if (_board!.finished) {
         _won = true;
+
+        final end = DateTime.now();
+        _durationInSeconds = end.difference(_start!).inSeconds;
+
+        MatchService().addMatch(
+          _currentUser!,
+          _won!,
+          _durationInSeconds!,
+        );
       }
     });
   }

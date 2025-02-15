@@ -6,6 +6,7 @@ class Board {
   final int rows;
   final int columns;
   final int minesCount;
+  bool _gameStarted = false;
 
   final List<Field> _fields = [];
 
@@ -20,6 +21,12 @@ class Board {
   }
 
   List<Field> get fields => _fields;
+
+  bool get gameStarted => _gameStarted;
+
+  void start() {
+    _gameStarted = true;
+  }
 
   void _createFields() {
     for (var row = 0; row < rows; row++) {
@@ -70,6 +77,8 @@ class Board {
     for (var field in _fields) {
       field.reset();
     }
+
+    _gameStarted = false;
 
     _sortMines();
   }
