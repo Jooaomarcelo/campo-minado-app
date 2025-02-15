@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:campo_minado_app/core/models/user_data.dart';
-import 'package:campo_minado_app/core/services/auth_firebase_service.dart';
+import 'package:campo_minado_app/core/services/auth/auth_firebase_service.dart';
 import 'package:flutter/material.dart';
 
 abstract class AuthService with ChangeNotifier {

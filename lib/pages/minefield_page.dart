@@ -5,7 +5,7 @@ import 'package:campo_minado_app/components/result_widget.dart';
 import 'package:campo_minado_app/core/models/board.dart';
 import 'package:campo_minado_app/core/models/explosion_exception.dart';
 import 'package:campo_minado_app/core/models/field.dart';
-import 'package:campo_minado_app/core/services/auth_service.dart';
+import 'package:campo_minado_app/core/services/auth/auth_service.dart';
 import 'package:campo_minado_app/core/services/match/match_service.dart';
 import 'package:flutter/material.dart';
 

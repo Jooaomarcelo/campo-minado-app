@@ -1,4 +1,4 @@
-import 'package:campo_minado_app/core/services/auth_service.dart';
+import 'package:campo_minado_app/core/services/auth/auth_service.dart';
 import 'package:campo_minado_app/pages/auth_page.dart';
 import 'package:campo_minado_app/pages/minefield_page.dart';
 import 'package:flutter/material.dart';

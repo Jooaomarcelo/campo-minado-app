@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-import 'package:campo_minado_app/core/services/auth_firebase_service.dart';
-import 'package:campo_minado_app/core/services/auth_service.dart';
+import 'package:campo_minado_app/core/services/auth/auth_firebase_service.dart';
+import 'package:campo_minado_app/core/services/auth/auth_service.dart';
 import 'package:campo_minado_app/pages/auth_or_app.dart';
 
 void main() async {

@@ -1,6 +1,6 @@
 import 'package:campo_minado_app/components/auth_form.dart';
 import 'package:campo_minado_app/core/models/auth_form_data.dart';
-import 'package:campo_minado_app/core/services/auth_service.dart';
+import 'package:campo_minado_app/core/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class AuthPage extends StatefulWidget {

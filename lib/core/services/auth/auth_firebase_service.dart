@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:campo_minado_app/core/models/user_data.dart';
-import 'package:campo_minado_app/core/services/auth_service.dart';
+import 'package:campo_minado_app/core/services/auth/auth_service.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
